@@ -31,7 +31,14 @@ def get_card_info(tag):
 
 # Getting Card types from wiki page (Monster, Spell, Impact)
 def get_card_type(tag):
-    card_type = tag.find(name='a', string="Monster").get_text()
+    card_type = None
+    if tag.find(name='a', string="Monster") is not None:
+        card_type = "Monster"
+    elif tag.find(name='a', string="Spell") is not None:
+        card_type = "Spell"
+    elif tag.find(name='a', string="Impact") is not None:
+        card_type = "Impact"
+
     return card_type
 
 
@@ -41,9 +48,13 @@ def card_create(tag, c_list):
     info = get_card_info(tag)
     if card_type == "Monster":
         c_list.append(card.Monster(info[1], info[17], info[9], info[11], info[13], info[15], info[-1]))
+    if card_type == "Spell":
+        c_list.append(card.Spell(info[1], info[11], info[-1]))
+    if card_type == "Impact":
+        c_list.append(card.Impact(info[1], info[11], info[-1]))
 
 
-card_webpage = "https://buddyfight.fandom.com/wiki/Drum_Bunker_Dragon"
+card_webpage = "https://buddyfight.fandom.com/wiki/Gargantua_Punisher!!"
 
 # Get Request for Webpage
 response = requests.get(card_webpage)

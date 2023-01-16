@@ -38,4 +38,15 @@ class Impact(Card):
         return "Name: " + self.name + "\nCard Type: " + self.card_type + "\nWorld: " + self.world + "\nEffect: " + self.effect
 
 
+class Item(Card):
+    def __init__(self, name, world, power, critical, effect):
+        super().__init__(name, world, effect)
+        self.power = power
+        self.critical = critical
+        self.card_type = "Item"
+
+    def __str__(self) -> str:
+        return "Name: " + self.name + "\nCard Type: " + self.card_type + "\nWorld: " + self.world + "\nPower: " + self.power + "\nCritical: " + self.critical + "\nEffect: " + self.effect
+
+
 

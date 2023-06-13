@@ -1,7 +1,50 @@
 import requests
 import card
+import json
 from bs4 import BeautifulSoup
 
+
+class CardEncoder(json.JSONEncoder):
+    def default(self, obj):
+        switch = {
+            "Monster": {
+                        'name': obj.name, 
+                        'power': obj.power,
+                        'defense': obj.defense,
+                        'crit' : obj.critical,
+                        'world': obj.world, 
+                        'effect': obj.effect,
+                        },
+            "Spell": {  
+                        'name': obj.name, 
+                        'world': obj.world, 
+                        'effect': obj.effect,
+                        },
+            "Item": {
+                        'name': obj.name, 
+                        'power': obj.power,
+                        'crit' : obj.critical,
+                        'world': obj.world, 
+                        'effect': obj.effect,
+                        },
+            "Impact": { 
+                        'name': obj.name, 
+                        'world': obj.world, 
+                        'effect': obj.effect,
+                        }
+        }
+
+        return switch.get(obj.card_type)
+        # if obj.type == "Monster":
+        #     return{'name': obj.name, 'world': obj.world, 'effect': obj.effect}
+        # if obj.type == "Spell":
+        #     return{'name': obj.name, 'world': obj.world, 'effect': obj.effect}
+        # if obj.type == "Item":
+        #     return{'name': obj.name, 'world': obj.world, 'effect': obj.effect}
+        # if obj.type == "Impact":
+        #     return{'name': obj.name, 'world': obj.world, 'effect': obj.effect}
+
+ 
 
 # Get Request for Webpage
 def card_page_init(card_webpage):
@@ -72,15 +115,18 @@ def card_create(tag, c_list):
     info = get_card_info(tag)
     if card_type == "Monster":
         if info[2] == "Kanji" and info[4] == "Kana":
-            c_list.append(card.Monster(info[1], info[19], info[11], info[13], info[15], info[17], info[-1]))
+            c_list.append(card.Monster(info[1], info[19], info[11], info[13], info[15], info[17], info[-1]).__dict__)
         else:
-            c_list.append(card.Monster(info[1], info[17], info[9], info[11], info[13], info[15], info[-1]))
-    if card_type == "Spell":
-        c_list.append(card.Spell(info[1], info[11], info[-1]))
-    if card_type == "Impact":
-        c_list.append(card.Impact(info[1], info[11], info[-1]))
-    if card_type == "Item":
-        c_list.append(card.Item(info[1], info[15], info[11], info[13], info[-1]))
+            c_list.append(card.Monster(info[1], info[17], info[9], info[11], info[13], info[15], info[-1]).__dict__)
+    elif card_type == "Spell":
+        if info[2] == "Kanji" and info[4] == "Kana":
+            c_list.append(card.Spell(info[1], info[11], info[-1]).__dict__)
+        else:
+            c_list.append(card.Spell(info[1], info[9], info[-1]).__dict__)
+    elif card_type == "Impact":
+        c_list.append(card.Impact(info[1], info[11], info[-1]).__dict__)
+    elif card_type == "Item":
+        c_list.append(card.Item(info[1], info[15], info[11], info[13], info[-1]).__dict__)
 
 
 soup = card_page_init("https://buddyfight.fandom.com/wiki/Booster_Set_1:_Dragon_Chief")
@@ -94,9 +140,18 @@ for url in card_url_list:
     card_create(soup, card_list)
 
 
-# iterates through list of card objects and prints data
-for card in card_list:
-    print("\n" + card.__str__())
+#Opens file to write to
+file = open("CardList.json", "w", encoding='utf-8')
+# # iterates through list of card objects and prints data
+# for card in card_list:
+#     print("\n" + card.__str__())
+#     file.write(card.__str__() + "\n"+ "\n")
+
+with open("CardList.json", 'w') as f:
+    #json.dump(card_list, f, cls=CardEncoder, indent=4)
+    json.dump(card_list, f, indent=4)
+
+#file.close()
 
 
 

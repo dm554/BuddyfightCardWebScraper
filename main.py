@@ -1,6 +1,7 @@
 import requests
 import card
 import json
+import sys
 from bs4 import BeautifulSoup
 
 
@@ -110,7 +111,7 @@ def card_create(tag, c_list):
 
 
 
-soup = card_page_init("https://buddyfight.fandom.com/wiki/Booster_Set_1:_Dragon_Chief")
+soup = card_page_init(str(sys.argv[1]))
 card_url_list = card_urls(soup)
 card_url_list = card_url_list[1::3]
 card_list = []
@@ -120,8 +121,10 @@ for url in card_url_list:
     soup = card_page_init("https://buddyfight.fandom.com/" + url)
     card_create(soup, card_list)
 
+
 #Opens/Creates json File and Dumps Card Objects
-with open("CardList.json", 'w') as f:
+jsonFileName = str(sys.argv[1]).split('/')[-1].replace(":", "") + ".json"
+with open("card_set_data/"+ jsonFileName, 'w') as f:
     json.dump(card_list, f, indent=4)
 
 print("\n--Set Completed--\n")

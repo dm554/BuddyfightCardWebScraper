@@ -1,5 +1,3 @@
 /__pycache__
 /venv
-/card_set_data
-CardList.json
-CardList.txt
+/card_set_data/

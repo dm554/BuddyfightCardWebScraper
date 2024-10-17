@@ -53,4 +53,10 @@ class Item(Card):
 
 
 
+class Flag(Card):
+    def __init__(self, name, world, effect):
+        super().__init__(name, world, effect)
+        self.card_type = "Flag"
 
+    def __str__(self) -> str:
+        return "Name: " + self.name + "\nCard Type: " + self.card_type + "\nWorld: " + self.world + "\nEffect: " + self.effect

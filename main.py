@@ -21,9 +21,13 @@ def card_urls(tag):
     url_list = []
 
     table = tag.find('table', class_='wikitable')
+    if table is None:
+        table = tag.find('table', class_='MsoTableGrid')
+
     for row in table.find_all('a'):
         href = row['href']
         url_list.append(href)
+        #print(url_list)
     return url_list
 
 
@@ -36,8 +40,12 @@ def get_card_ability(tag):
         card_lines = line.get_text(separator=" ", strip=True)
         card_text_list.append(card_lines)
 
-    ability_index = card_text_list.index('Ability / Effect') + 1
-    return card_text_list[ability_index]
+    if 'Ability / Effect' in card_text_list:
+        ability_index = card_text_list.index('Ability / Effect') + 1
+        return card_text_list[ability_index]
+    else:
+        abl_text = ''
+        return card_text_list[-1:]
 
 
 # Gets specific card information from wiki page
@@ -64,11 +72,14 @@ def get_card_type(tag):
         card_type = "Impact"
     elif tag.find(name='a', string="Item") is not None:
         card_type = "Item"
+    elif tag.find(name='a', string="Flag") is not None:
+        card_type = "Flag"
 
     return card_type
 
 #Gets a list of card attributes
 def grab_card_attributes(info):
+    print(info)
     startIndex = info.index("Attribute") + 1
     if "Illust" in info or "Design / Illust" in info:
         if "Illust" in info:
@@ -88,38 +99,59 @@ def grab_card_attributes(info):
 def card_create(tag, c_list):
     card_type = get_card_type(tag)
     info = get_card_info(tag)
-    attribute = grab_card_attributes(info)
-    
-    if card_type == "Monster":
-        if info[2] == "Kanji" and info[4] == "Kana":
-            c_list.append(card.Monster(info[1], info[19], info[11], info[13], info[15], info[17], info[-1], attribute).__dict__)
-        else:
-            c_list.append(card.Monster(info[1], info[17], info[9], info[11], info[13], info[15], info[-1], attribute).__dict__)
+    if card_type != "Flag":
+        attribute = grab_card_attributes(info)
+
+    if card_type == "Flag":
+        c_list.append(card.Flag(info[info.index("English") + 1],
+                                info[info.index("World") + 1],
+                                info[-1]).__dict__)
+    elif card_type == "Monster":
+        c_list.append(card.Monster(info[info.index("English") + 1],
+                                   info[info.index("World") + 1],
+                                   info[info.index("Size") + 1],
+                                   info[info.index("Power") + 1],
+                                   info[info.index("Critical") + 1],
+                                   info[info.index("Defense") + 1],
+                                   info[-1],
+                                   attribute).__dict__)
     elif card_type == "Spell":
-        if info[2] == "Kanji" and info[4] == "Kana":
-            if(info[8] == "Translated"):
-                c_list.append(card.Spell(info[1], info[13], info[-1], attribute).__dict__)
-            else:
-                c_list.append(card.Spell(info[1], info[11], info[-1], attribute).__dict__)
-            
-        else:
-            c_list.append(card.Spell(info[1], info[9], info[-1], attribute).__dict__)
+        c_list.append(card.Spell(info[info.index("English") + 1],
+                                 info[info.index("World") + 1],
+                                 info[-1],
+                                 attribute).__dict__)
     elif card_type == "Impact":
-        c_list.append(card.Impact(info[1], info[11], info[-1], attribute).__dict__)
+        c_list.append(card.Impact(info[info.index("English") + 1],
+                                  info[info.index("World") + 1],
+                                  info[-1],
+                                  attribute).__dict__)
     elif card_type == "Item":
-        c_list.append(card.Item(info[1], info[15], info[11], info[13], info[-1], attribute).__dict__)
+        c_list.append(card.Item(info[info.index("English") + 1],
+                                info[info.index("World") + 1],
+                                info[info.index("Power") + 1],
+                                info[info.index("Critical") + 1],
+                                info[-1],
+                                attribute).__dict__)
 
 
 
 soup = card_page_init(str(sys.argv[1]))
 card_url_list = card_urls(soup)
+
+#Booster Set
 card_url_list = card_url_list[1::3]
+#Trial Deck
+#card_url_list = card_url_list[1::4]
+
 card_list = []
+
+omit_list = ["/wiki/My_Buddy!"]
 
 #Iterates through Card URLs in Set and Creates Card Objects
 for url in card_url_list:
-    soup = card_page_init("https://buddyfight.fandom.com/" + url)
-    card_create(soup, card_list)
+    if url not in omit_list:
+        soup = card_page_init("https://buddyfight.fandom.com/" + url)
+        card_create(soup, card_list)
 
 
 #Opens/Creates json File and Dumps Card Objects
